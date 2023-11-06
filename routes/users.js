@@ -37,7 +37,10 @@ router.post(
       res.location("/");
       res.sendStatus(201);
     } catch (error) {
-      if (error.name === "SequelizeUniqueConstraintError") {
+      if (
+        error.name === "SequelizeUniqueConstraintError" ||
+        error.name === "SequelizeValidationError"
+      ) {
         const errors = error.errors.map((err) => err.message);
         res.status(400).json({ errors });
       } else {

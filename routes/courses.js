@@ -37,9 +37,18 @@ router.post(
   "/",
   authenticateUser,
   asyncHandler(async (req, res) => {
-    await Course.create(req.body);
-    res.location(`/${req.body.id}`);
-    res.sendStatus(201);
+    try {
+      await Course.create(req.body);
+      res.location(`/${req.body.id}`);
+      res.sendStatus(201);
+    } catch (error) {
+      if (error.name === "SequelizeValidationError") {
+        const errors = error.errors.map((err) => err.message);
+        res.status(400).json({ errors });
+      } else {
+        throw error;
+      }
+    }
   })
 );
 
@@ -81,18 +90,27 @@ router.put(
   "/:id",
   authenticateUser,
   asyncHandler(async (req, res) => {
-    const credentials = auth(req);
-    const course = await Course.findByPk(req.params.id);
-    const user = await User.findByPk(course.userId);
-    if (credentials.name === user.emailAddress) {
-      if (course) {
-        await course.update(req.body);
-        res.sendStatus(204);
+    try {
+      const credentials = auth(req);
+      const course = await Course.findByPk(req.params.id);
+      const user = await User.findByPk(course.userId);
+      if (credentials.name === user.emailAddress) {
+        if (course) {
+          await course.update(req.body);
+          res.sendStatus(204);
+        } else {
+          res.sendStatus(404);
+        }
       } else {
-        res.sendStatus(404);
+        res.sendStatus(403);
       }
-    } else {
-      res.sendStatus(403);
+    } catch (error) {
+      if (error.name === "SequelizeValidationError") {
+        const errors = error.errors.map((err) => err.message);
+        res.status(400).json({ errors });
+      } else {
+        throw error;
+      }
     }
   })
 );
