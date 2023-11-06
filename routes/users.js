@@ -3,21 +3,12 @@ const router = express.Router();
 const User = require("../models").User;
 const bcrypt = require('bcrypt');
 const asyncHandler = require('../middleware/asyncHandler')
+const { authenticateUser } = require('../middleware/auth-user')
 
-// handler function
-// function asyncHandler(cb) {
-//   return async (req, res, next) => {
-//     try {
-//       await cb(req, res, next);
-//     } catch (error) {
-//       // Forward error to the global error handler
-//       next(error);
-//     }
-//   };
-// }
-
+// get all users
 router.get(
   "/",
+  authenticateUser,
   asyncHandler(async (req, res) => {
     const users = await User.findAll();
     res.status(200);
@@ -25,10 +16,13 @@ router.get(
   })
 );
 
+// create a new user
 router.post(
   "/",
-  asyncHandler(async (req, res, next) => {
-    req.body.password = bcrypt.hashSync(req.body.password, 10)
+  asyncHandler(async (req, res) => {
+    if(req.body.password) {
+      req.body.password = bcrypt.hashSync(req.body.password, 10)
+    }
     await User.create(req.body);
     res.location('/')
     res.sendStatus(201)

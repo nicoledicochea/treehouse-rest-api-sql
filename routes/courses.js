@@ -3,18 +3,7 @@ const router = express.Router();
 const Course = require("../models").Course;
 const User = require("../models").User;
 const asyncHandler = require('../middleware/asyncHandler')
-
-// handler function
-// function asyncHandler(cb) {
-//   return async (req, res, next) => {
-//     try {
-//       await cb(req, res, next);
-//     } catch (error) {
-//       // Forward error to the global error handler
-//       next(error);
-//     }
-//   };
-// }
+const { authenticateUser } = require('../middleware/auth-user')
 
 // get all courses
 router.get(
@@ -36,10 +25,10 @@ router.get(
 // create a course
 router.post(
   "/",
+  authenticateUser,
   asyncHandler(async (req, res) => {
     await Course.create(req.body);
     res.sendStatus(201);
-    res.json({ message: "Course successfully created!" });
   })
 );
 
@@ -66,6 +55,7 @@ router.get(
 // update a specific course
 router.put(
   "/:id",
+  authenticateUser,
   asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
     await course.update(req.body);
@@ -76,6 +66,7 @@ router.put(
 // delete a specific course
 router.delete(
   "/:id",
+  authenticateUser,
   asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
     await course.destroy();
