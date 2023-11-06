@@ -10,7 +10,9 @@ router.get(
   "/",
   authenticateUser,
   asyncHandler(async (req, res) => {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+    });
     res.status(200);
     res.json(users);
   })
@@ -20,12 +22,24 @@ router.get(
 router.post(
   "/",
   asyncHandler(async (req, res) => {
-    if(req.body.password) {
-      req.body.password = bcrypt.hashSync(req.body.password, 10)
+    try {
+      if(req.body.password) {
+        req.body.password = bcrypt.hashSync(req.body.password, 10)
+      } else {
+        res.sendStatus(401)
+      }
+      await User.create(req.body);
+      res.location('/')
+      res.sendStatus(201)
+    } catch (error) {
+      if(error.name === 'SequelizeUniqueConstraintError') {
+        const errors = error.errors.map(err => err.message)
+        res.status(400).json({ errors })
+      } else {
+        throw error
+      }
     }
-    await User.create(req.body);
-    res.location('/')
-    res.sendStatus(201)
+   
   })
 );
 
