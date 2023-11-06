@@ -5,11 +5,6 @@ module.exports = (sequelize) => {
   class Course extends Sequelize.Model {}
   Course.init(
     {
-      id: {
-        type: Sequelize.INTEGER,
-        primaryKey: true,
-        autoIncrement: true,
-      },
       title: {
         type: Sequelize.STRING,
         allowNull: false,
