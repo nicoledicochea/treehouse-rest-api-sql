@@ -4,14 +4,19 @@ const User = require("../models").User;
 const bcrypt = require("bcrypt");
 const asyncHandler = require("../middleware/asyncHandler");
 const { authenticateUser } = require("../middleware/auth-user");
+const auth = require("basic-auth");
 
 // get all users
 router.get(
   "/",
   authenticateUser,
   asyncHandler(async (req, res) => {
-    const users = await User.findAll({
+    const credentials = auth(req);
+    const users = await User.findOne({
       attributes: ["id", "firstName", "lastName", "emailAddress"],
+      where: {
+        emailAddress: credentials.name,
+      },
     });
     res.status(200);
     res.json(users);
