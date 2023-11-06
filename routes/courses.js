@@ -2,18 +2,28 @@ const express = require("express");
 const router = express.Router();
 const Course = require("../models").Course;
 const User = require("../models").User;
-const asyncHandler = require('../middleware/asyncHandler')
-const { authenticateUser } = require('../middleware/auth-user')
+const asyncHandler = require("../middleware/asyncHandler");
+const { authenticateUser } = require("../middleware/auth-user");
+const auth = require("basic-auth");
 
 // get all courses
 router.get(
   "/",
   asyncHandler(async (req, res) => {
     const courses = await Course.findAll({
+      attributes: [
+        "id",
+        "title",
+        "description",
+        "estimatedTime",
+        "materialsNeeded",
+        "userId",
+      ],
       include: [
         {
           model: User,
           as: "user",
+          attributes: ["id", "firstName", "lastName", "emailAddress"],
         },
       ],
     });
@@ -28,6 +38,7 @@ router.post(
   authenticateUser,
   asyncHandler(async (req, res) => {
     await Course.create(req.body);
+    res.location(`/${req.body.id}`);
     res.sendStatus(201);
   })
 );
@@ -37,6 +48,14 @@ router.get(
   "/:id",
   asyncHandler(async (req, res) => {
     const course = await Course.findOne({
+      attributes: [
+        "id",
+        "title",
+        "description",
+        "estimatedTime",
+        "materialsNeeded",
+        "userId",
+      ],
       where: {
         id: req.params.id,
       },
@@ -44,6 +63,7 @@ router.get(
         {
           model: User,
           as: "user",
+          attributes: ["id", "firstName", "lastName", "emailAddress"],
         },
       ],
     });
@@ -51,7 +71,7 @@ router.get(
       res.status(200);
       res.json(course);
     } else {
-      res.sendStatus(404)
+      res.sendStatus(404);
     }
   })
 );
@@ -61,12 +81,18 @@ router.put(
   "/:id",
   authenticateUser,
   asyncHandler(async (req, res) => {
+    const credentials = auth(req);
     const course = await Course.findByPk(req.params.id);
-    if(course) {
-      await course.update(req.body);
-      res.sendStatus(204);
+    const user = await User.findByPk(course.userId);
+    if (credentials.name === user.emailAddress) {
+      if (course) {
+        await course.update(req.body);
+        res.sendStatus(204);
+      } else {
+        res.sendStatus(404);
+      }
     } else {
-      res.sendStatus(404)
+      res.sendStatus(403);
     }
   })
 );
@@ -76,12 +102,18 @@ router.delete(
   "/:id",
   authenticateUser,
   asyncHandler(async (req, res) => {
+    const credentials = auth(req);
     const course = await Course.findByPk(req.params.id);
-    if(course) {
-      await course.destroy();
-      res.sendStatus(204);
+    const user = await User.findByPk(course.userId);
+    if (credentials.name === user.emailAddress) {
+      if (course) {
+        await course.destroy();
+        res.sendStatus(204);
+      } else {
+        res.sendStatus(404);
+      }
     } else {
-      res.sendStatus(404)
+      res.sendStatus(403);
     }
   })
 );

@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
 const User = require("../models").User;
-const bcrypt = require('bcrypt');
-const asyncHandler = require('../middleware/asyncHandler')
-const { authenticateUser } = require('../middleware/auth-user')
+const bcrypt = require("bcrypt");
+const asyncHandler = require("../middleware/asyncHandler");
+const { authenticateUser } = require("../middleware/auth-user");
 
 // get all users
 router.get(
@@ -11,7 +11,7 @@ router.get(
   authenticateUser,
   asyncHandler(async (req, res) => {
     const users = await User.findAll({
-      attributes: ['id', 'firstName', 'lastName', 'emailAddress']
+      attributes: ["id", "firstName", "lastName", "emailAddress"],
     });
     res.status(200);
     res.json(users);
@@ -23,23 +23,22 @@ router.post(
   "/",
   asyncHandler(async (req, res) => {
     try {
-      if(req.body.password) {
-        req.body.password = bcrypt.hashSync(req.body.password, 10)
+      if (req.body.password) {
+        req.body.password = bcrypt.hashSync(req.body.password, 10);
       } else {
-        res.sendStatus(401)
+        return res.sendStatus(401);
       }
       await User.create(req.body);
-      res.location('/')
-      res.sendStatus(201)
+      res.location("/");
+      res.sendStatus(201);
     } catch (error) {
-      if(error.name === 'SequelizeUniqueConstraintError') {
-        const errors = error.errors.map(err => err.message)
-        res.status(400).json({ errors })
+      if (error.name === "SequelizeUniqueConstraintError") {
+        const errors = error.errors.map((err) => err.message);
+        res.status(400).json({ errors });
       } else {
-        throw error
+        throw error;
       }
     }
-   
   })
 );
 

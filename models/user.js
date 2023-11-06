@@ -38,7 +38,7 @@ module.exports = (sequelize) => {
         type: Sequelize.STRING,
         allowNull: false,
         unique: {
-            msg: "The email you entered already exists"
+          msg: "The email you entered already exists",
         },
         validate: {
           notNull: {
