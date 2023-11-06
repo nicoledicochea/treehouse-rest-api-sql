@@ -26,7 +26,6 @@ router.post(
     await User.create(req.body);
     res.location('/')
     res.sendStatus(201)
-    // res.json({ "message": "Account successfully created!" })
   })
 );
 

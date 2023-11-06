@@ -47,8 +47,12 @@ router.get(
         },
       ],
     });
-    res.status(200);
-    res.json(course);
+    if (course) {
+      res.status(200);
+      res.json(course);
+    } else {
+      res.sendStatus(404)
+    }
   })
 );
 
@@ -58,8 +62,12 @@ router.put(
   authenticateUser,
   asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
-    await course.update(req.body);
-    res.status(204).send();
+    if(course) {
+      await course.update(req.body);
+      res.sendStatus(204);
+    } else {
+      res.sendStatus(404)
+    }
   })
 );
 
@@ -69,8 +77,12 @@ router.delete(
   authenticateUser,
   asyncHandler(async (req, res) => {
     const course = await Course.findByPk(req.params.id);
-    await course.destroy();
-    res.status(204).send();
+    if(course) {
+      await course.destroy();
+      res.sendStatus(204);
+    } else {
+      res.sendStatus(404)
+    }
   })
 );
 
