@@ -35,7 +35,7 @@ router.post(
       }
       await User.create(req.body);
       res.location("/");
-      res.sendStatus(201);
+      res.status(201).send();
     } catch (error) {
       if (
         error.name === "SequelizeUniqueConstraintError" ||

@@ -40,7 +40,7 @@ router.post(
     try {
       await Course.create(req.body);
       res.location(`/${req.body.id}`);
-      res.sendStatus(201);
+      res.status(201).send();
     } catch (error) {
       if (error.name === "SequelizeValidationError") {
         const errors = error.errors.map((err) => err.message);
