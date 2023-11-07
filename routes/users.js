@@ -12,6 +12,7 @@ router.get(
   authenticateUser,
   asyncHandler(async (req, res) => {
     const credentials = auth(req);
+    console.log(credentials)
     const users = await User.findOne({
       attributes: ["id", "firstName", "lastName", "emailAddress"],
       where: {
@@ -30,9 +31,7 @@ router.post(
     try {
       if (req.body.password) {
         req.body.password = bcrypt.hashSync(req.body.password, 10);
-      } else {
-        return res.sendStatus(401);
-      }
+      } 
       await User.create(req.body);
       res.location("/");
       res.status(201).send();
